@@ -223,20 +223,23 @@ static void run_source(const member_ctx_t* ctx, const cfg_t* cfg) {
             }
 
             if (FD_ISSET(ctx->fd_in_backward, &rfds)) {
-                /* Rejection coming back. */
+                /* Rejection arriving back at source */
                 msg_t back;
                 ssize_t br = read_full(ctx->fd_in_backward, &back, sizeof back);
                 if (br <= 0) {
                     if (stop_flag || reset_flag) break;
                     continue;
                 }
-                if (back.round != current_round) continue;  /* stale */
+                if (back.round != current_round) continue;
+
+                /* Show piece arriving back at source (member 0) */
+                back.from_member = 0;
+                send_status(ctx->fd_status_out, STATUS_TRACE, ctx->team_id, 0, &back, delivered_in_round);
 
                 rejected[back.piece_index] = 1;
                 handled++;
                 in_flight = 0;
                 tired_pause(cfg, handled, &seed);
-                send_status(ctx->fd_status_out, STATUS_TRACE, ctx->team_id, 0, &back, delivered_in_round);
             }
 
             if (FD_ISSET(ctx->fd_notif_in, &rfds)) {
@@ -322,15 +325,16 @@ static void run_middle(const member_ctx_t* ctx, const cfg_t* cfg) {
             msg_t m;
             ssize_t r = read_full(ctx->fd_in_forward, &m, sizeof m);
             if (r > 0 && m.kind == MSG_PIECE) {
+                /* Report arrival BEFORE pause so GUI shows piece at this member */
+                m.from_member = ctx->member_id;
+                send_status(ctx->fd_status_out, STATUS_TRACE, ctx->team_id, ctx->member_id, &m, 0);
                 tired_pause(cfg, handled++, &seed);
                 if (reset_flag || stop_flag) continue;
-                m.from_member = ctx->member_id;
                 if (write_full(ctx->fd_out_forward, &m, sizeof m) < 0) continue;
                 fwd_count++;
                 if (trace && fwd_count % 20 == 0)
                     fprintf(stderr, "[m %d:%d mid] forwarded %d pieces (last serial=%d round=%d)\n",
                             ctx->team_id, ctx->member_id, fwd_count, m.serial, m.round);
-                send_status(ctx->fd_status_out, STATUS_TRACE, ctx->team_id, ctx->member_id, &m, 0);
             }
         }
 
@@ -339,12 +343,13 @@ static void run_middle(const member_ctx_t* ctx, const cfg_t* cfg) {
             msg_t m;
             ssize_t r = read_full(ctx->fd_in_backward, &m, sizeof m);
             if (r > 0 && m.kind == MSG_PIECE) {
+                /* Report arrival BEFORE pause */
+                m.from_member = ctx->member_id;
+                send_status(ctx->fd_status_out, STATUS_TRACE, ctx->team_id, ctx->member_id, &m, 0);
                 tired_pause(cfg, handled++, &seed);
                 if (reset_flag || stop_flag) continue;
-                m.from_member = ctx->member_id;
                 if (write_full(ctx->fd_out_backward, &m, sizeof m) < 0) continue;
                 bwd_count++;
-                send_status(ctx->fd_status_out, STATUS_TRACE, ctx->team_id, ctx->member_id, &m, 0);
             }
         }
     }
@@ -389,6 +394,11 @@ static void run_sink(const member_ctx_t* ctx, const cfg_t* cfg) {
             delivered_this_round = 0;
         }
 
+        /* Report arrival AT SINK before pause so GUI shows piece reaching sink */
+        m.from_member = ctx->member_id;
+        send_status(ctx->fd_status_out, STATUS_TRACE, ctx->team_id,
+                    ctx->member_id, &m, delivered_this_round);
+
         tired_pause(cfg, handled++, &seed);
         if (reset_flag || stop_flag) continue;
 
@@ -404,17 +414,18 @@ static void run_sink(const member_ctx_t* ctx, const cfg_t* cfg) {
                         ctx->member_id, &m, delivered_this_round);
 
             if (delivered_this_round == cfg->num_pieces) {
-                /* WIN! Tell parent. Parent will SIGUSR1 us to reset. */
                 send_status(ctx->fd_status_out, STATUS_WIN, ctx->team_id,
                             ctx->member_id, &m, delivered_this_round);
             }
         } else {
-            /* Wrong order — bounce backwards. */
+            /* Wrong order — bounce backwards.
+             * The direction=-1 trace will show the piece moving back. */
             m.direction = -1;
             m.from_member = ctx->member_id;
             if (write_full(ctx->fd_out_backward, &m, sizeof m) < 0) {
                 if (stop_flag || reset_flag) continue;
             }
+            /* Send trace with direction=-1 so GUI knows it's going back */
             send_status(ctx->fd_status_out, STATUS_TRACE, ctx->team_id,
                         ctx->member_id, &m, delivered_this_round);
         }
