@@ -1,11 +1,13 @@
+# Good for watching the visualization:
+# - Pieces visibly slide between members 
+# - Plenty of rejections to see the bounce-back animation
 team_size      = 4
-num_pieces     = 6
-min_pause_ms   = 800
-max_pause_ms   = 2000
-fatigue_factor = 1.05
-fatigue_cap_ms = 5000
+num_pieces     = 12
+min_pause_ms   = 2400
+max_pause_ms   = 5600
+fatigue_factor = 1.005
+fatigue_cap_ms = 9600
 wins_to_match  = 2
-gui_enabled    = 0
+seed_mode      = random
+gui_enabled    = 1
 verbose        = 1
-
-#FURN_TRACE=1 ./build/furnishing config/default.txt 2>&1 | grep -E "(src|sink|won|ROUND|DELIVERED|WIN)"
