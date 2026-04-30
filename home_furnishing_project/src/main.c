@@ -35,7 +35,7 @@ static void on_sigchld(int s) {
 static void on_sigint(int s) { (void)s; g_world.shutting_down = 1; }
 
 int main(int argc, char** argv) {
-    const char* cfg_path = (argc >= 2) ? argv[1] : "config/default.cfg";
+    const char* cfg_path = (argc >= 2) ? argv[1] : "config/default.txt";
 
     cfg_t cfg;
     if (config_load(&cfg, cfg_path) != 0) {
