@@ -1,5 +1,5 @@
 team_size      = 4
-num_pieces     = 15
+num_pieces     = 50
 min_pause_ms   = 5
 max_pause_ms   = 20
 fatigue_factor = 1.0
