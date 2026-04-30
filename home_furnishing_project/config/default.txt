@@ -12,7 +12,7 @@ team_size      = 5
 
 # Number of furniture pieces per house (one pair per piece).
 # Default in spec is 1000; lowered here so demos finish quickly.
-num_pieces     = 50
+num_pieces     = 1000
 
 # Per-member random pause range (milliseconds), before fatigue.
 min_pause_ms   = 30
