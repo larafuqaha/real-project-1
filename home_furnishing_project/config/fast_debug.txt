@@ -1,0 +1,7 @@
+team_size      = 4
+num_pieces     = 15
+min_pause_ms   = 5
+max_pause_ms   = 25
+fatigue_factor = 1.0
+fatigue_cap_ms = 50
+wins_to_match  = 2
