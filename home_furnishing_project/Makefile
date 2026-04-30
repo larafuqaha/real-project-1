@@ -42,7 +42,7 @@ all: $(BIN)
 $(BIN): $(OBJ) | $(BUILDDIR)
 	$(CC) -o $@ $(OBJ) $(LDFLAGS)
 	@echo
-	@echo "Built $(BIN). Run with:  ./$(BIN) config/default.cfg"
+	@echo "Built $(BIN). Run with:  ./$(BIN) config/default.txt"
 	@echo
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
@@ -61,7 +61,7 @@ debug:
 	        LDFLAGS="-fopenmp -lGL -lGLU -lglut -lm"
 
 run: $(BIN)
-	./$(BIN) config/default.cfg
+	./$(BIN) config/default.txt
 
 clean:
 	rm -rf $(BUILDDIR)
