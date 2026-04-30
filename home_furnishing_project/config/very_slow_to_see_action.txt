@@ -1,0 +1,11 @@
+team_size      = 4
+num_pieces     = 6
+min_pause_ms   = 800
+max_pause_ms   = 2000
+fatigue_factor = 1.05
+fatigue_cap_ms = 5000
+wins_to_match  = 2
+gui_enabled    = 0
+verbose        = 1
+
+#FURN_TRACE=1 ./build/furnishing config/default.txt 2>&1 | grep -E "(src|sink|won|ROUND|DELIVERED|WIN)"
