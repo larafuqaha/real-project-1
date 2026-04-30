@@ -8,7 +8,7 @@
 
 # Number of members in each team. Includes source (member 0) and sink
 # (member team_size-1). Allowed range: 2..32.
-team_size      = 5
+team_size      = 4
 
 # Number of furniture pieces per house (one pair per piece).
 # Default in spec is 1000; lowered here so demos finish quickly.
