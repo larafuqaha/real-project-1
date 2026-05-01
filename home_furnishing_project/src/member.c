@@ -157,15 +157,22 @@ static void run_source(const member_ctx_t* ctx, const cfg_t* cfg) {
         delivered_in_round = 0;
         memset(delivered, 0, cfg->num_pieces * sizeof(int));
         memset(rejected,  0, cfg->num_pieces * sizeof(int));
+        /*#pragma omp parallel for
+        for (int i = 0; i < cfg->num_pieces; i++) {
+            delivered[i] = 0;
+            rejected[i]  = 0;
+        }*/
         reset_flag = 0;
         in_flight = 0;
 
-        /* assign serials: a permutation of 1..num_pieces */
+        #pragma omp parallel for
         for (int i = 0; i < cfg->num_pieces; i++) serials[i] = i + 1;
+
+        /* Fisher-Yates shuffle — must stay sequential, each step depends on previous */
         for (int i = cfg->num_pieces - 1; i > 0; i--) {
             int j = rand_r(&seed) % (i + 1);
             int t = serials[i]; serials[i] = serials[j]; serials[j] = t;
-        }
+    }
 
         /* drain any stale notifications/rejections from previous round */
         drain_pipe_nonblock(ctx->fd_notif_in);
