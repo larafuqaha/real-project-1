@@ -5,7 +5,7 @@
 #   make             — build with OpenGL + OpenMP
 #   make headless    — build without OpenGL (no -lGL etc.)
 #   make debug       — build with -O0 and asan-friendly flags
-#   make run         — build and run with config/default.cfg
+#   make run         — build and run with config/default.txt
 #   make clean
 # =====================================================================
 
@@ -67,3 +67,30 @@ clean:
 	rm -rf $(BUILDDIR)
 
 .PHONY: all clean run debug headless
+
+# ---- test targets --------------------------------------------------------
+
+CC_TEST = cc -O0 -g -Wall -fopenmp
+
+build/test_ipc: src/ipc.c tests/test_ipc.c | $(BUILDDIR)
+	$(CC_TEST) src/ipc.c tests/test_ipc.c -o build/test_ipc -lm
+
+build/test_config: src/config.c tests/test_config.c | $(BUILDDIR)
+	$(CC_TEST) src/config.c tests/test_config.c -o build/test_config -lm
+
+.PHONY: test test-unit test-scenarios test-stress
+
+test: test-unit test-scenarios test-stress
+
+test-unit: build/test_ipc build/test_config
+	@echo "=== Unit Tests ==="
+	@./build/test_ipc
+	@./build/test_config
+
+test-scenarios: $(BIN)
+	@echo "=== Scenario Tests ==="
+	@bash tests/test_scenarios.sh
+
+test-stress: $(BIN)
+	@echo "=== Stress Tests ==="
+	@bash tests/test_stress.sh
