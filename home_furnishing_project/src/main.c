@@ -1,7 +1,7 @@
 /*
  * main.c — entry point for the home furnishing competition.
  *
- * Reads config (path from argv[1] if given, else config/default.cfg).
+ * Reads config (path from argv[1] if given, else config/default.txt).
  * Forks all member processes via referee_setup().
  * Hands off to GLUT (gui_run) or headless mode based on config.
  */
