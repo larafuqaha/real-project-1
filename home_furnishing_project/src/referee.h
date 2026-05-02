@@ -12,6 +12,7 @@ typedef struct {
 
     /* live, for visualization: which member currently has piece p? */
     int     piece_position[MAX_PIECES]; /* member id; -1 if not in flight */
+    int     piece_serial[MAX_PIECES];   /* serial number of piece p, 0 if unknown */
     int     delivered[MAX_PIECES];      /* 0/1 */
     int     wins;
     int     delivered_in_round;
