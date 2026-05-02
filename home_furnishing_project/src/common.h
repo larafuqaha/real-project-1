@@ -1,8 +1,6 @@
 /*
  * common.h — shared types and constants for the home furnishing simulation.
- *
- * One copy of this header is included by every translation unit. Keep it
- * minimal: types, constants, and tiny inline helpers only.
+ *.
  */
 #ifndef COMMON_H
 #define COMMON_H
@@ -20,10 +18,12 @@
 
 /* ---- message kinds sent on the conveyor pipes --------------------------- */
 typedef enum {
-    MSG_PIECE          = 1,   /* a furniture piece on the move */
-    MSG_START_ROUND    = 2,   /* parent → source: begin new round */
-    MSG_STOP           = 3,   /* graceful stop token (rarely used; signals usually) */
-    MSG_DELIVERY_NOTIF = 4    /* parent → source: a piece was delivered; clear rejections */
+    MSG_PIECE           = 1, /* a furniture piece on the move */
+    MSG_START_ROUND     = 2, /* parent -> source: begin new round */
+    MSG_STOP            = 3, /* graceful stop token */
+    MSG_DELIVERY_NOTIF  = 4, /* parent -> source: piece delivered; clear rejections */
+    MSG_REJECTION_NOTIF = 5  /* parent -> source: sink rejected a piece; it is now in
+                                 the backward pipe -- forward pipe is free, send next */
 } msg_kind_t;
 
 /* ---- message struct moving on every pipe -------------------------------- */
