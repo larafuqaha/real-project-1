@@ -564,11 +564,14 @@ static void reshape(int w, int h) {
 static void timer(int v) {
     (void)v;
     if (!g_world->shutting_down) referee_tick(g_world);
+    
+    //  don't redisplay if window is gone
+    if (glutGetWindow() == 0) return;
+    
     glutPostRedisplay();
 
     if (g_world->shutting_down && g_world->winner >= 0) {
-        /* Stay open for ~2s after winner declared, then quit. */
-        static int countdown = 60;   /* 60 frames * 33 ms ~ 2 s */
+        static int countdown = 60;
         if (--countdown <= 0) {
             referee_shutdown(g_world);
             glutLeaveMainLoop();
@@ -585,7 +588,9 @@ static void keyboard(unsigned char k, int x, int y) {
         glutLeaveMainLoop();
     }
 }
-
+static void on_window_close(void) {
+    referee_shutdown(g_world);  // kills children cleanly, same as pressing Q
+}
 void gui_run(int* argc, char** argv, world_t* world) {
     g_world = world;
     g_t_start = now_sec();
@@ -604,6 +609,8 @@ void gui_run(int* argc, char** argv, world_t* world) {
     glutTimerFunc(0, timer, 0);
 
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+    glutCloseFunc(on_window_close); 
     glutMainLoop();
 }
 
