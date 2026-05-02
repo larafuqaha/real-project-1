@@ -1,17 +1,8 @@
-# =====================================================================
-# default.cfg — Home Furnishing Competition runtime configuration.
-# Pass this file as argv[1] to the executable, e.g.:
-#   ./build/furnishing config/default.cfg
-# Anything you change here takes effect on the next run — no recompile.
-# Lines starting with '#' are comments. Format: key = value
-# =====================================================================
 
-# Number of members in each team. Includes source (member 0) and sink
-# (member team_size-1). Allowed range: 2..32.
+
 team_size      = 4
 
-# Number of furniture pieces per house (one pair per piece).
-# Default in spec is 1000; lowered here so demos finish quickly.
+
 num_pieces     = 1000
 
 # Per-member random pause range (milliseconds), before fatigue.
