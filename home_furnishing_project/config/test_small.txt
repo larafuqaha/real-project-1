@@ -1,4 +1,4 @@
-# Small config for quick functional test (no GUI needed)
+# Small config for quick functional test 
 team_size      = 4
 num_pieces     = 25
 min_pause_ms   = 5
