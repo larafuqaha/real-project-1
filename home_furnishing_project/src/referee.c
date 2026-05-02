@@ -136,7 +136,7 @@ int referee_setup(world_t* world, const cfg_t* cfg) {
         }
     }
 
-    /* IMPORTANT: fork BEFORE any OpenMP threads are created. */
+    /*  fork BEFORE any OpenMP threads are created. */
     for (int t = 0; t < NUM_TEAMS; t++) {
         for (int m = 0; m < cfg->team_size; m++) {
             pid_t pid = fork();
@@ -176,6 +176,7 @@ int referee_setup(world_t* world, const cfg_t* cfg) {
         world->teams[t].fd_notif_out = g_pipes[t].notif[1];
         for (int i = 0; i < cfg->num_pieces; i++) {
             world->teams[t].piece_position[i] = -1;
+            world->teams[t].piece_serial[i]   = 0;
             world->teams[t].delivered[i] = 0;
         }
         world->teams[t].wins = 0;
@@ -198,6 +199,7 @@ void referee_start_round(world_t* world) {
     for (int t = 0; t < NUM_TEAMS; t++) {
         for (int i = 0; i < world->cfg.num_pieces; i++) {
             world->teams[t].piece_position[i] = 0; /* at source */
+            world->teams[t].piece_serial[i]   = 0;
             world->teams[t].delivered[i] = 0;
         }
     }
@@ -239,8 +241,29 @@ void referee_tick(world_t* world) {
             if (r == (ssize_t)sizeof s) {
                 /* update visualization model */
                 if (s.kind == STATUS_TRACE) {
-                    if (s.piece_index >= 0 && s.piece_index < world->cfg.num_pieces)
+                    if (s.piece_index >= 0 && s.piece_index < world->cfg.num_pieces) {
                         world->teams[t].piece_position[s.piece_index] = s.member;
+                        world->teams[t].piece_serial[s.piece_index]   = s.serial;
+                    }
+                    /* If the SINK emitted this trace with direction=-1 it means
+                     * it just rejected the piece and put it on the backward pipe.
+                     * The forward pipe is now free — tell the source immediately
+                     * so it can send the next piece without waiting for the
+                     * physical return journey (2-in-flight pipelining). */
+                    if (s.direction == -1 && s.member == world->cfg.team_size - 1) {
+                        msg_t rn;
+                        memset(&rn, 0, sizeof rn);
+                        rn.kind        = MSG_REJECTION_NOTIF;
+                        rn.serial      = s.serial;
+                        rn.piece_index = s.piece_index;
+                        rn.round       = s.round;
+                        rn.direction   = -1;
+                        if (write_full(world->teams[t].fd_notif_out, &rn, sizeof rn) < 0) {
+                            if (errno != EPIPE && world->cfg.verbose)
+                                fprintf(stderr, "[referee] rejection notif write failed: %s\n",
+                                        strerror(errno));
+                        }
+                    }
                 } else if (s.kind == STATUS_DELIVERED) {
                     if (s.piece_index >= 0 && s.piece_index < world->cfg.num_pieces) {
                         world->teams[t].delivered[s.piece_index] = 1;
@@ -257,7 +280,7 @@ void referee_tick(world_t* world) {
                     notif.piece_index = s.piece_index;
                     notif.round       = s.round;
                     notif.direction   = +1;
-                    /* Best-effort: source may have died or pipe may be full;
+                    /*  source may have died or pipe may be full;
                      * we don't block here. */
                     if (write_full(world->teams[t].fd_notif_out, &notif, sizeof notif) < 0) {
                         if (errno != EPIPE && world->cfg.verbose)
@@ -321,7 +344,6 @@ void referee_shutdown(world_t* world) {
         if (!any_left) break;
         nanosleep(&ts, NULL);
     }
-    /* Last resort: SIGKILL stragglers */
     for (int t = 0; t < NUM_TEAMS; t++) {
         for (int m = 0; m < world->cfg.team_size; m++) {
             pid_t p = world->teams[t].member_pids[m];
