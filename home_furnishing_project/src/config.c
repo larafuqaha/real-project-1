@@ -5,13 +5,13 @@
 #include <errno.h>
 
 static void set_defaults(cfg_t* c) {
-    c->team_size       = 5;
+    c->team_size       = 4;
     c->num_pieces      = 1000;
     c->min_pause_ms    = 50;
     c->max_pause_ms    = 250;
     c->fatigue_factor  = 1.0005;
     c->fatigue_cap_ms  = 2000;
-    c->wins_to_match   = 3;
+    c->wins_to_match   = 2;
     c->seed_mode_user  = 0;
     c->user_seed       = 0;
     c->gui_enabled     = 1;
