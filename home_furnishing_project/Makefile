@@ -78,14 +78,22 @@ build/test_ipc: src/ipc.c tests/test_ipc.c | $(BUILDDIR)
 build/test_config: src/config.c tests/test_config.c | $(BUILDDIR)
 	$(CC_TEST) src/config.c tests/test_config.c -o build/test_config -lm
 
+build/test_member: src/ipc.c src/config.c tests/test_member.c | $(BUILDDIR)
+	$(CC_TEST) src/ipc.c src/config.c tests/test_member.c -o build/test_member -lm
+
+build/test_referee: src/ipc.c src/config.c src/member.c src/referee.c tests/test_referee.c | $(BUILDDIR)
+	$(CC_TEST) src/ipc.c src/config.c src/member.c src/referee.c tests/test_referee.c -o build/test_referee -lm
+
 .PHONY: test test-unit test-scenarios test-stress
 
 test: test-unit test-scenarios test-stress
 
-test-unit: build/test_ipc build/test_config
+test-unit: build/test_ipc build/test_config build/test_member build/test_referee
 	@echo "=== Unit Tests ==="
 	@./build/test_ipc
 	@./build/test_config
+	@./build/test_member
+	@./build/test_referee
 
 test-scenarios: $(BIN)
 	@echo "=== Scenario Tests ==="
