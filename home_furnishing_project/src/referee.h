@@ -24,6 +24,7 @@ typedef struct {
     int          current_round;
     int          winner;        /* -1 none, 0 or 1 if match decided */
     int          shutting_down;
+    int          pipes_freed;
 } world_t;
 
 /* Entire setup: forks all members, sets up pipes, fills `world`. */
