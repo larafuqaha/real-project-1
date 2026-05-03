@@ -155,3 +155,10 @@ The project includes a four-layer test suite.
 - GCC with OpenMP support (fopenmp)
 - freeglut3-dev for OpenGL/GLUT visualization (optional, falls back to headless)
 - GDB for debugging (optional, binary compiled with -g by default)
+  
+#### Warning ########
+If you encounter the error command not found: $'\r' when running the test scripts, it means the files were downloaded with Windows line endings. Fix it by running the following commands in the project directory, then re-run the tests: 
+
+sed -i 's/\r//' tests/test_scenarios.sh
+sed -i 's/\r//' tests/test_stress.sh
+make test
