@@ -321,6 +321,8 @@ void referee_tick(world_t* world) {
 }
 
 void referee_shutdown(world_t* world) {
+    if (world->pipes_freed) return;
+    world->pipes_freed = 1;
     world->shutting_down = 1;
     broadcast_signal(world, SIGUSR2);
 
